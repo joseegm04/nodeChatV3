@@ -1,0 +1,49 @@
+extends layout
+
+block content
+  .row
+    h1= title
+    h7#numClientes
+    ul#mensajes 
+  .row
+    .col-12.col-md-6
+      label Nombre:  
+      input#inputUsuario(type="text")
+      p
+  .row
+    .col-12.col-md-6
+      label Mensaje:   
+      input#inputMensaje(type="text")
+      p
+      button#btnEnviar Enviar
+
+  script(src="/socket.io/socket.io.js") //- codigo JS del cliente, nos traemos la librería de socket.io
+  script. 
+    // alert('Entrando en JS')  //- ojo, el punto y luego debajo la tabulación para que pug lo interprete correcto
+    const socket = io()
+
+    const inputUsuario = document.getElementById('inputUsuario')
+    const inputMensaje = document.getElementById('inputMensaje')
+    const btnEnviar = document.getElementById('btnEnviar')
+    const mensajes = document.getElementById('mensajes')
+    const numClientes = document.getElementById('numClientes')
+
+
+    btnEnviar.addEventListener('click', () => {
+        socket.emit('mensaje_chat', {               //- nombre que le damos a nuestro evento seguido de los parámetros
+            usuario: inputUsuario.value,
+            mensaje: inputMensaje.value        
+        })
+    });
+
+    socket.on('mensaje_chat', datos => {   //- Nos suscribimos a nuestro propio evento
+        // console.log(datos);
+        const li = document.createElement('li');
+        li.innerText = `${datos.usuario}: ${datos.mensaje}`;
+
+        mensajes.append(li);
+    });
+
+    socket.on('num_clientes', num => {   //- Nos suscribimos a nuestro propio evento nuevo
+        numClientes.innerText = `Clientes conectados: ${num}`;
+    });
